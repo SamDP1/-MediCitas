@@ -1,6 +1,8 @@
-# MediCitas — App completa reforzada para POO
+# MediCitas — App completa con POO y patrones
 
-Aplicación web funcional de gestión de citas médicas. Esta versión fue complementada para cumplir con una rúbrica basada en:
+Aplicación web funcional para la gestión de citas médicas de una clínica de atención general. Esta versión mantiene una interfaz más limpia y profesional: la app ya no muestra una pantalla técnica de explicación de POO o patrones; esa sustentación queda documentada aquí y en el código.
+
+El proyecto cumple con la rúbrica solicitada:
 
 - Paradigma de Orientación a Objetos.
 - Mínimo 2 patrones de diseño.
@@ -51,119 +53,21 @@ http://localhost:8000
 
 ---
 
-## Qué ya tenía la app
+## Cambios visuales de esta versión
 
-La app ya incluía:
+Se retiró la sección visible **“POO y patrones”** del menú para que el sistema se vea más natural como una app médica real.
 
-- Inicio de sesión con correo y contraseña.
-- Roles: administrador, recepcionista, paciente y médico.
-- Gestión de citas médicas.
-- Registro de pacientes.
-- Agenda médica.
-- Bloqueo de horarios por médico.
-- Historial del paciente.
-- Notificaciones internas.
-- SMS simulado.
-- Trazabilidad y logs.
-- Alertas predictivas.
-- Persistencia con `localStorage`.
+También se limpió la pantalla de inicio de sesión. Ahora muestra una descripción general del sistema y módulos funcionales, sin mencionar directamente nombres técnicos como patrones de diseño o excepciones.
+
+La implementación técnica sigue dentro del código y se explica en este README.
 
 ---
 
-## Qué se agregó o reforzó en esta versión
-
-### 1. Orientación a Objetos más clara
-
-Se agregaron clases explícitas en `app.js`:
-
-- `Usuario`
-- `Paciente`
-- `Medico`
-- `Cita`
-- `CitaConsulta`
-- `CitaTelemedicina`
-- `CitaLaboratorio`
-
-Estas clases ayudan a sustentar que el proyecto usa POO, porque organizan entidades, atributos y comportamientos.
-
-### 2. Excepciones personalizadas
-
-Se agregaron clases de excepción:
-
-- `MediCitasException`
-- `ValidacionException`
-- `AccesoNoPermitidoException`
-- `EntidadNoEncontradaException`
-- `EstadoInvalidoException`
-- `HorarioOcupadoException`
-
-También se agregó `App.handleError(err)` como manejador central de errores. Esto evita que la aplicación se caiga y permite mostrar el error de forma clara al usuario.
-
-### 3. Pantalla “POO y patrones”
-
-Se agregó una nueva sección en el menú llamada **POO y patrones**. Allí se explica dentro de la misma app:
-
-- Qué clases usa el proyecto.
-- Qué patrones de diseño se implementaron.
-- Dónde se usa cada patrón.
-- Cómo fluye una cita desde la interfaz hasta las notificaciones.
-
-Esta pantalla sirve como evidencia rápida para exposición o revisión del docente.
-
-### 4. Diagrama PlantUML
-
-Se agregó el archivo:
-
-```text
-DIAGRAMA_CLASES_MediCitas.puml
-```
-
-Ese archivo contiene un diagrama de clases en código PlantUML para poder pegarlo en PlantUML y generar la imagen.
-
----
-
-## Patrones de diseño implementados
-
-La rúbrica pide al menos 2 patrones. Esta versión contiene más de 2:
-
-### Factory Method
-
-Usado en `CitaFactory.create(cita)`.
-
-Sirve para crear diferentes tipos de citas según el tipo seleccionado:
-
-- Consulta general.
-- Telemedicina.
-- Laboratorio.
-
-### Strategy
-
-Usado en `Strategy.assign(...)`.
-
-Permite cambiar la política de asignación automática de horarios:
-
-- Por disponibilidad.
-- Por urgencia.
-- Por orden de llegada.
-
-### Observer
-
-Usado en `Observer.notifyAppointment(...)`.
-
-Cuando una cita cambia, se notifican automáticamente los usuarios relacionados.
-
-### Adapter
-
-Usado en `SMSAdapter.send(...)`.
-
-Simula el envío de SMS y deja lista la estructura para conectarla después con un proveedor real.
-
----
-
-## Funciones principales
+## Funciones principales de la app
 
 - Login por correo y contraseña.
 - Control de acceso por roles.
+- Roles: administrador, recepcionista, paciente y médico.
 - Crear, editar, confirmar y cancelar citas.
 - Evitar duplicidad de horarios.
 - Bloquear horarios médicos.
@@ -177,8 +81,102 @@ Simula el envío de SMS y deja lista la estructura para conectarla después con 
 - Simular envío SMS.
 - Ver logs de trazabilidad.
 - Exportar logs en JSON.
-- Cambiar estrategia de asignación de horarios.
+- Cambiar la política de asignación de horarios.
 - Restaurar datos demo.
+- Persistencia con `localStorage`.
+
+---
+
+## Orientación a Objetos
+
+Se agregaron clases explícitas en `app.js` para organizar el dominio del sistema:
+
+- `Usuario`
+- `Paciente`
+- `Medico`
+- `Cita`
+- `CitaConsulta`
+- `CitaTelemedicina`
+- `CitaLaboratorio`
+
+Estas clases permiten sustentar el paradigma de Orientación a Objetos porque agrupan atributos y comportamientos propios de cada entidad. Por ejemplo, `Usuario` valida permisos, `Paciente` administra historial y `Cita` permite cambiar su estado.
+
+---
+
+## Manejo de excepciones
+
+Se agregaron excepciones personalizadas:
+
+- `MediCitasException`
+- `ValidacionException`
+- `AccesoNoPermitidoException`
+- `EntidadNoEncontradaException`
+- `EstadoInvalidoException`
+- `HorarioOcupadoException`
+
+Además, la app usa `App.handleError(err)` como manejador central. Esto permite capturar errores, mostrar mensajes al usuario y registrar eventos críticos sin que la aplicación se caiga.
+
+---
+
+## Patrones de diseño implementados
+
+La rúbrica pide al menos 2 patrones. Esta versión implementa más de 2:
+
+### 1. Factory Method
+
+Ubicación principal: `CitaFactory.create(cita)`.
+
+Sirve para crear el objeto correcto según el tipo de cita seleccionado:
+
+- `CitaConsulta`
+- `CitaTelemedicina`
+- `CitaLaboratorio`
+
+Así, el formulario no necesita saber qué clase concreta debe construir.
+
+### 2. Strategy
+
+Ubicación principal: `Strategy.assign(...)`.
+
+Permite cambiar la política de asignación automática de horarios sin modificar el formulario de citas.
+
+Estrategias disponibles:
+
+- Por disponibilidad.
+- Por urgencia.
+- Por orden de llegada.
+
+### 3. Observer
+
+Ubicación principal: `Observer.notifyAppointment(...)`.
+
+Cuando una cita se crea, modifica, confirma o cancela, el sistema notifica automáticamente a los usuarios relacionados.
+
+### 4. Adapter
+
+Ubicación principal: `SMSAdapter.send(...)`.
+
+Simula el envío de SMS y deja preparada la estructura para reemplazar ese envío por un proveedor real en el futuro.
+
+---
+
+## Diagrama de clases
+
+Se incluye el archivo:
+
+```text
+DIAGRAMA_CLASES_MediCitas.puml
+```
+
+Ese archivo contiene un diagrama de clases en PlantUML. Puedes pegarlo en PlantUML para generar la imagen del diagrama.
+
+---
+
+## Qué decir en la sustentación
+
+Puedes decir esto:
+
+> MediCitas es un sistema web de gestión de citas médicas desarrollado con JavaScript, HTML y CSS. El proyecto aplica Programación Orientada a Objetos mediante clases como Usuario, Paciente, Médico y Cita. Además, implementa patrones de diseño como Factory Method para crear distintos tipos de cita, Strategy para cambiar la asignación de horarios, Observer para las notificaciones y Adapter para simular el envío de SMS. También incluye manejo de excepciones personalizadas y un manejador central de errores para evitar fallos inesperados en la aplicación.
 
 ---
 

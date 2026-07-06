@@ -362,7 +362,6 @@
       if (view === "logs") content.innerHTML = Views.logs();
       if (view === "alerts") content.innerHTML = Views.alerts();
       if (view === "notifications") content.innerHTML = Views.notifications();
-      if (view === "architecture") content.innerHTML = Views.architecture();
       if (view === "settings") content.innerHTML = Views.settings();
       if (view === "search") content.innerHTML = Views.search();
     },
@@ -1026,14 +1025,14 @@
           <section class="login-hero">
             <div class="logo-row"><div class="logo">MC</div><div><b>MediCitas</b><br><span class="muted">Sistema de gestión médica</span></div></div>
             <div>
-              <h1>Gestión de citas médicas segura, trazable y por roles.</h1>
-              <p>Aplicación funcional basada en los requerimientos del informe: pacientes con historial, recepcionista con gestión de citas, médicos con agenda, administrador con cuentas, trazabilidad y alertas predictivas.</p>
+              <h1>Agenda médica digital para una atención más ordenada.</h1>
+              <p>Organiza citas, pacientes, médicos, horarios y notificaciones desde una sola plataforma, con acceso diferenciado para cada usuario de la clínica.</p>
             </div>
             <div class="feature-grid">
-              ${feature("Singleton + Roles", "Permisos diferenciados para paciente, médico, recepcionista y administrador.")}
-              ${feature("Factory + Strategy", "Citas de consulta, telemedicina y laboratorio con asignación flexible de horarios.")}
-              ${feature("Observer + SMSAdapter", "Notificaciones internas, del navegador y SMS simulado auditable.")}
-              ${feature("DbC + Trazabilidad", "Precondiciones, postcondiciones, logs y alertas preventivas.")}
+              ${feature("Gestión de citas", "Reserva, edición, confirmación y cancelación de turnos médicos.")}
+              ${feature("Pacientes e historial", "Registro de pacientes y seguimiento de sus atenciones.")}
+              ${feature("Agenda médica", "Horarios por médico, especialidad y disponibilidad.")}
+              ${feature("Panel administrativo", "Cuentas, trazabilidad, alertas y configuración del sistema.")}
             </div>
           </section>
           <section style="display:grid;place-items:center;padding:24px">
@@ -1095,7 +1094,7 @@
     },
 
     navItems(user) {
-      const base = [{ id: "dashboard", label: "Inicio", icon: "🏠" }, { id: "architecture", label: "POO y patrones", icon: "🧩" }, { id: "notifications", label: "Notificaciones", icon: "🔔" }];
+      const base = [{ id: "dashboard", label: "Inicio", icon: "🏠" }, { id: "notifications", label: "Notificaciones", icon: "🔔" }];
       if (user.role === Rol.RECEPCIONISTA) return base.concat([{ id: "appointments", label: "Citas", icon: "📅" }, { id: "patients", label: "Pacientes", icon: "👤" }, { id: "search", label: "Búsqueda", icon: "🔎" }]);
       if (user.role === Rol.PACIENTE) return base.concat([{ id: "appointments", label: "Mis citas", icon: "📅" }, { id: "history", label: "Mi historial", icon: "🧾" }, { id: "search", label: "Búsqueda", icon: "🔎" }]);
       if (user.role === Rol.MEDICO) return base.concat([{ id: "agenda", label: "Mi agenda", icon: "🩺" }, { id: "patients", label: "Mis pacientes", icon: "👥" }, { id: "search", label: "Búsqueda", icon: "🔎" }]);
@@ -1264,45 +1263,22 @@
       const user = App.currentUser();
       const notifications = App.state.notifications.filter(n => n.userId === user.id).sort((a,b) => b.id.localeCompare(a.id));
       return `
-        <div class="page-title"><div><h1>Notificaciones</h1><p>Observer extendido: los cambios de citas generan avisos internos y SMS simulado al paciente.</p></div><button class="btn ghost" onclick="App.markAllNotificationsRead()">Marcar todo como leído</button></div>
+        <div class="page-title"><div><h1>Notificaciones</h1><p>Los cambios de citas generan avisos internos para mantener informados a pacientes, médicos y administración.</p></div><button class="btn ghost" onclick="App.markAllNotificationsRead()">Marcar todo como leído</button></div>
         <div class="list">
           ${notifications.map(n => `<div class="appointment-card" style="border-color:${n.read ? "var(--border)" : "#185fa5"}"><div class="appointment-head"><div><b>${esc(n.title)}</b><p class="muted" style="margin:5px 0">${esc(n.message)}</p><span class="mono muted-2">${esc(n.ts)} ${n.appointmentId ? "· " + esc(n.appointmentId) : ""}</span></div><div class="actions"><span class="badge ${n.read ? "ok" : "warn"}">${n.read ? "Leída" : "Nueva"}</span>${!n.read ? `<button class="btn small ghost" onclick="App.markNotificationRead('${n.id}')">Marcar leída</button>` : ""}</div></div></div>`).join("") || `<div class="empty">No tienes notificaciones.</div>`}
-        </div>`;
-    },
-
-    architecture() {
-      return `
-        <div class="page-title">
-          <div><h1>POO y patrones</h1><p>Resumen listo para sustentar la rúbrica: orientación a objetos, patrones de diseño, interfaz gráfica y manejo de excepciones.</p></div>
-        </div>
-        <div class="grid stats">
-          ${stat("Clases POO", "13", "Dominio + excepciones")}
-          ${stat("Patrones", "4+", "Factory, Strategy, Observer, Adapter")}
-          ${stat("Excepciones", "5", "Personalizadas")}
-          ${stat("Interfaz", "100% web", "Sin dependencias externas")}
-        </div>
-        <div class="grid two">
-          ${ArchitectureCatalog.map(item => `<div class="card pad architecture-card"><div class="appointment-head"><h3 style="margin:0">${esc(item.title)}</h3><span class="badge SISTEMA">${esc(item.where)}</span></div><p class="muted">${esc(item.body)}</p></div>`).join("")}
-        </div>
-        <div class="card pad" style="margin-top:16px">
-          <h3 style="margin-top:0">Flujo principal de una cita</h3>
-          <div class="architecture-flow">
-            <span>Formulario UI</span><b>→</b><span>Contract.require</span><b>→</b><span>CitaFactory</span><b>→</b><span>Strategy</span><b>→</b><span>Observer</span><b>→</b><span>SMSAdapter + Logs</span>
-          </div>
-          <p class="muted" style="margin-bottom:0">Este flujo muestra cómo la app separa responsabilidades: la interfaz captura datos, los contratos validan, la fábrica crea el objeto correcto, la estrategia asigna horario y el observador notifica.</p>
         </div>`;
     },
 
     settings() {
       App.require("CHANGE_STRATEGY");
       return `
-        <div class="page-title"><div><h1>Configuración</h1><p>Strategy permite cambiar la política de asignación de horarios en tiempo de ejecución.</p></div></div>
+        <div class="page-title"><div><h1>Configuración</h1><p>Ajusta la forma en que el sistema asigna horarios disponibles para las citas.</p></div></div>
         <div class="grid two">
           ${strategyCard(Estrategia.DISPONIBILIDAD, "Por disponibilidad", "Selecciona un horario libre intermedio para distribuir la agenda.")}
           ${strategyCard(Estrategia.URGENCIA, "Por urgencia", "Toma el horario libre más temprano disponible.")}
           ${strategyCard(Estrategia.ORDEN_LLEGADA, "Por orden de llegada", "Asigna el último horario libre de la cola de atención.")}
         </div>
-        <div class="card pad" style="margin-top:16px"><h3 style="margin-top:0">SMSAdapter</h3><p class="muted">Los SMS se registran como envíos simulados porque una integración real requiere credenciales de un proveedor externo. El diseño queda desacoplado: para conectar Twilio, AWS SNS u otro proveedor solo se reemplaza el Adapter.</p><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Teléfono</th><th>Mensaje</th><th>Estado</th></tr></thead><tbody>${App.state.smsOutbox.slice().reverse().map(s => `<tr><td class="mono muted">${esc(s.ts)}</td><td>${esc(s.phone)}</td><td>${esc(s.message)}</td><td><span class="badge ok">${esc(s.status)}</span></td></tr>`).join("") || `<tr><td colspan="4" class="empty">Aún no hay SMS enviados.</td></tr>`}</tbody></table></div></div>`;
+        <div class="card pad" style="margin-top:16px"><h3 style="margin-top:0">Mensajes SMS simulados</h3><p class="muted">Los mensajes se registran como envíos simulados para dejar constancia de las comunicaciones generadas por el sistema.</p><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Teléfono</th><th>Mensaje</th><th>Estado</th></tr></thead><tbody>${App.state.smsOutbox.slice().reverse().map(s => `<tr><td class="mono muted">${esc(s.ts)}</td><td>${esc(s.phone)}</td><td>${esc(s.message)}</td><td><span class="badge ok">${esc(s.status)}</span></td></tr>`).join("") || `<tr><td colspan="4" class="empty">Aún no hay SMS enviados.</td></tr>`}</tbody></table></div></div>`;
     },
 
     search() {
@@ -1353,13 +1329,13 @@
       const bloqueos = logs.filter(l => l.accion === "BLOQUEAR_HORARIO").length;
       const sms = App.state.smsOutbox.length;
       const alerts = [
-        { type: "ok", title: "Singleton y roles activos", message: "El acceso se controla por permisos antes de ejecutar acciones sensibles.", mitigation: "Mantener tabla de permisos actualizada según rol." },
+        { type: "ok", title: "Roles activos", message: "El acceso se controla por permisos antes de ejecutar acciones sensibles.", mitigation: "Mantener la tabla de permisos actualizada según rol." },
         { type: "ok", title: "Trazabilidad operativa", message: `Hay ${logs.length} eventos auditables con timestamp, rol, acción y detalle.`, mitigation: "Exportar logs periódicamente para respaldo." },
       ];
       alerts.push(cancelaciones > 3 ? { type: "warn", title: "Alto número de cancelaciones", message: `Se detectaron ${cancelaciones} cancelaciones. Puede indicar sobrecarga o mala planificación.`, mitigation: "Revisar disponibilidad médica y reajustar estrategia de horarios." } : { type: "ok", title: "Cancelaciones controladas", message: `Cancelaciones registradas: ${cancelaciones}.`, mitigation: "Mantener seguimiento en trazabilidad." });
       alerts.push(denegados > 2 ? { type: "error", title: "Accesos denegados reiterados", message: `Se detectaron ${denegados} intentos denegados.`, mitigation: "Revisar cuentas, roles y posibles intentos indebidos." } : { type: "ok", title: "Seguridad estable", message: `Intentos denegados: ${denegados}.`, mitigation: "Conservar restricciones por rol." });
       alerts.push(bloqueos > 4 ? { type: "warn", title: "Muchos horarios bloqueados", message: `Bloqueos de horarios: ${bloqueos}.`, mitigation: "Coordinar agenda médica para evitar falta de cupos." } : { type: "ok", title: "Disponibilidad médica normal", message: `Bloqueos registrados: ${bloqueos}.`, mitigation: "Revisar cupos por fecha antes de agendar." });
-      alerts.push({ type: sms ? "ok" : "warn", title: "Canal SMSAdapter", message: sms ? `SMS simulados enviados: ${sms}.` : "Aún no se generaron envíos SMS simulados.", mitigation: "Para producción, conectar proveedor SMS real en el Adapter." });
+      alerts.push({ type: sms ? "ok" : "warn", title: "Canal de mensajes", message: sms ? `SMS simulados enviados: ${sms}.` : "Aún no se generaron envíos SMS simulados.", mitigation: "Para producción, conectar un proveedor SMS real." });
       return alerts;
     },
   };
